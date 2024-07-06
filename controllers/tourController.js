@@ -1,8 +1,30 @@
 const fs = require("fs");
 
-exports.tours = JSON.parse(
+const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
+
+// Param Middleware to check if the id is not bigger than tour id and exist
+exports.checkID = (req, res, next, val) => {
+  if (req.params.id * 1 > tours.length) {
+    return res.status(404).json({
+      status: "fail",
+      message: "Invalid ID",
+    });
+  }
+  next();
+};
+
+// Check body of create method before creating a tour to see if name and price fields are not missing in body
+exports.checkBody = (req, res, next) => {
+  if (!req.body.name || !req.body.price) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Missing name or price",
+    });
+  }
+  next();
+};
 
 exports.getAllTours = (req, res) => {
   res.status(200).json({
@@ -53,15 +75,6 @@ exports.createTour = (req, res) => {
 };
 
 exports.updateTour = (req, res) => {
-  const id = req.params.id * 1;
-
-  if (id > tours.length) {
-    return res.status(404).json({
-      status: "fail",
-      message: "Invalid ID",
-    });
-  }
-
   res.status(200).json({
     status: "success",
     data: {
@@ -71,15 +84,6 @@ exports.updateTour = (req, res) => {
 };
 
 exports.deleteTour = (req, res) => {
-  const id = req.params.id * 1;
-
-  if (id > tours.length) {
-    return res.status(404).json({
-      status: "fail",
-      message: "Invalid ID",
-    });
-  }
-
   res.status(204).json({
     status: "success",
     data: null,
